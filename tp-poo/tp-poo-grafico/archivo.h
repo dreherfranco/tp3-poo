@@ -3,6 +3,13 @@
 #include "pila.h"
 #include "ocurrencia.h"
 
+struct ArchivoStruct{
+    char nombre[60];
+    char path[256];
+    char ocurrencia[60];
+    int totalOcurrencias;
+};
+
 class Archivo
 {
 private:
@@ -10,15 +17,18 @@ private:
     char* nombre;
     char** lines;
     int cantLines=0;
-
+    int totalOcurrencias;
 public:
     Archivo();
     Ocurrencia* ocurrencia;
 
     void setPath(char* path);
+    void setPath(ArchivoStruct archivo);
     char* getPath();
+    void setTotalOcurrencias(int total);
 
     void setNombre(char* nombre);
+    void setNombre(ArchivoStruct archivo);
     char* getNombre();
 
     int getCantidadCaracteres();

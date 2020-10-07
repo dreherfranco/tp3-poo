@@ -5,6 +5,7 @@
 #include "directorio.h"
 #include "archivo.h"
 
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -29,11 +30,15 @@ private:
     const char* path;
 
     Directorio* directorio;
-    Archivo** archivos;
-
+    //Archivo** archivos;
+    std::vector<Archivo*> archivos;
     char* ocurrencia;
     int longOcu;
 
     QByteArray ignorarPreposiciones(QByteArray ocurrencia);
+    bool fileExist(std::string filename);
+    void extraerDeArchivoBinario();
+   ArchivoStruct returnStruct(Archivo* archivo);
+
 };
 #endif // MAINWINDOW_H

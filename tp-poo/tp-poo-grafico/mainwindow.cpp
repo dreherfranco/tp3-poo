@@ -4,6 +4,8 @@
 #include <fstream>
 #include <string>
 #include <QStandardItemModel>
+#include "pila.h"
+#include "algorithm"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -17,16 +19,21 @@ MainWindow::MainWindow(QWidget *parent)
     this->ui->ocurrenciasFinded->hide();
     this->ui->pushButton->hide();
 
-    QPalette Pal(palette());
+    /*QPalette Pal(palette());
     Pal.setColor(QPalette::Background, "#4f4f4f");
     this->setAutoFillBackground(true);
     this->setPalette(Pal);
-    this->show();
+    this->show();*/
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+bool ordenar(Archivo *archivo1, Archivo *archivo2)
+{
+    return archivo1->ocurrencia->getCantOcurrencias() > archivo2->ocurrencia->getCantOcurrencias();
 }
 
 
@@ -71,49 +78,66 @@ void MainWindow::on_botonBuscar_clicked()
     delete this->directorio;
 
     //Instancio el arreglo de archivos, la cual ayudara a ordenarlos posteriormente por ocurrencias encontradas
-    this->archivos = new Archivo*[cantArchivos+1];
+   // this->archivos = new Archivo*[cantArchivos+1];
 
-    //Recorro la variables listaArchivos y creo los items de la tabla
-    for(int j=0; j<cantArchivos; j++){
+    std::string nombreArchivoBin = "indices.dat";
 
-        QString archivoNombre = listaArchivos[j];
-        //Instancio objeto de archivo
-        Archivo* archivo= new Archivo();
+    std::ifstream binaryFileRead(nombreArchivoBin,std::ios::binary);
 
-        //seteo el nombre del archivo que voy a usar para mostrarlo en los item del modelo
-        int tamanioNombre = archivoNombre.length()+1;
-        char* nombre = new char[tamanioNombre];
+    if(fileExist(nombreArchivoBin)){
+        std::ofstream binaryFileWrite(nombreArchivoBin,std::ios::binary | std::ios::out | std::ios::ate);
+        //Recorro la variables listaArchivos y creo los items de la tabla
+        for(int j=0; j<cantArchivos; j++){
 
-        nombre = strcpy(nombre, archivoNombre.toLatin1().data());
-        archivo->setNombre(nombre);
+            QString archivoNombre = listaArchivos[j];
+            //Instancio objeto de archivo
+            Archivo* archivo= new Archivo();
 
-        //tamanio del char* , el +2 representa al \\ y al caracter nulo
-        int tamanioPath = conversionRuta.length() + archivoNombre.length() + 2;
+            //seteo el nombre del archivo que voy a usar para mostrarlo en los item del modelo
+            int tamanioNombre = archivoNombre.length()+1;
+            char* nombre = new char[tamanioNombre];
 
-        //Reservar memoria a char* filename y concatenacion del nombre del archivo
-        char* filename ;
+            nombre = strcpy(nombre, archivoNombre.toLatin1().data());
+            archivo->setNombre(nombre);
 
-        filename = new char[tamanioPath];
-        filename = strcpy(filename, conversionRuta.data() );
-        filename = strcat(filename, "\\");
-        filename = strcat(filename, archivoNombre.toLatin1().data());
+            //tamanio del char* , el +2 representa al \\ y al caracter nulo
+            int tamanioPath = conversionRuta.length() + archivoNombre.length() + 2;
 
-        //Seteo el path del archivo
-        archivo->setPath(filename);
+            //Reservar memoria a char* filename y concatenacion del nombre del archivo
+            char* filename ;
 
-        //columna de ocurrencias
-        archivo->ocurrencia->setTamanioOcu(ocu.length());
-        archivo->ocurrencia->setOcurrencia(this->ocurrencia);
+            filename = new char[tamanioPath];
+            filename = strcpy(filename, conversionRuta.data() );
+            filename = strcat(filename, "\\");
+            filename = strcat(filename, archivoNombre.toLatin1().data());
 
-        //Le paso true por parametro para que cuente las ocurrencias
-        archivo->getLines(filename,true);
+            //Seteo el path del archivo
+            archivo->setPath(filename);
 
-        //Asigno el archivo creado por cada iteracion a un indice del arreglo de archivos
-        this->archivos[j] = archivo;
+            //columna de ocurrencias
+            archivo->ocurrencia->setTamanioOcu(ocu.length());
+            archivo->ocurrencia->setOcurrencia(this->ocurrencia);
 
+            //Le paso true por parametro para que cuente las ocurrencias
+            archivo->getLines(filename,true);
+
+            //Asigno el archivo creado por cada iteracion a un indice del arreglo de archivos
+
+            //this->archivos[j] = archivo;
+
+            ArchivoStruct structArch = this->returnStruct(archivo);
+            binaryFileWrite.write((char*)&structArch, sizeof(structArch));
+        }
+        binaryFileWrite.close();
+        this->extraerDeArchivoBinario();
+
+    }else{
+        this->extraerDeArchivoBinario();
     }
+
+
         //Ordenar los archivos segun las ocurrencias
-        for(i=0; i<cantArchivos-1; i++){
+        /*for(i=0; i<cantArchivos-1; i++){
             for(int j=i+1; j<cantArchivos; j++){
                 if(this->archivos[i]->ocurrencia->getCantOcurrencias() < this->archivos[j]->ocurrencia->getCantOcurrencias()){
                     //ordenamiento
@@ -124,21 +148,27 @@ void MainWindow::on_botonBuscar_clicked()
 
                 }
             }
-        }
+        }*/
+
+    std::sort(this->archivos.begin(), this->archivos.end(), &ordenar);
+
         i=0;
-        for(int j=0; j<cantArchivos; j++){
-            QString nombreArchivo = this->archivos[j]->getNombre();
+
+        for(std::vector<Archivo*>::iterator it = this->archivos.begin();it < this->archivos.end(); ++it){
+            Archivo* archivoIt = *it;
+            QString nombreArchivo = archivoIt->getNombre();
 
               QStandardItem * itemNombreArchivo = new QStandardItem(nombreArchivo);
               model->setItem(i, 0, itemNombreArchivo);
                //Cantidad de caracteres, contando el salto de linea
-               int cantCaracteres = this->archivos[j]->getCantidadCaracteres();
+               int cantCaracteres = archivoIt->getCantidadCaracteres();
 
                QStandardItem* itemCantidadCarac = new QStandardItem(QString::number(cantCaracteres));
                //Asigno a la columna de cantidad la cantidad de caracteres correspondiente al archivo
                model->setItem(i, 1, itemCantidadCarac);
 
-               model->setItem(i, 2, new QStandardItem(QString::number(this->archivos[j]->ocurrencia->getCantOcurrencias())));
+               archivoIt->ocurrencia->setNombreArchivo(archivoIt->getNombre());
+               model->setItem(i, 2, new QStandardItem(QString::number(archivoIt->ocurrencia->getCantOcurrencias())));
                i++;
 
         }
@@ -215,13 +245,11 @@ void MainWindow::on_tableView_doubleClicked(const QModelIndex &index)
         QString aInsertar;
         int cantNodos = archivo->ocurrencia->getCantNodos();
 
+        std::vector<ocurrenciaStruct> vecOcurrencias = archivo->ocurrencia->getLinea_yPos();
+
         for(int i=0; i<cantNodos; i++){
             //Linea y posicion donde se encontro la ocurrencia
-            int* linea_y_posicion = new int[2];
-            linea_y_posicion = archivo->ocurrencia->getLinea_yPos();
-            aInsertar.prepend(QString::number(linea_y_posicion[0])+"\t"+QString::number(linea_y_posicion[1])+"\n");
-
-            delete[] linea_y_posicion;
+            aInsertar.prepend(QString::number(vecOcurrencias[i].pos)+"\t"+QString::number(vecOcurrencias[i].linea)+"\n");
         }
         aInsertar.prepend("Posicion\tLinea\n");
 
@@ -249,6 +277,48 @@ QByteArray MainWindow::ignorarPreposiciones(QByteArray ocurrencia){
     return ocurrencia;
 }
 
+bool MainWindow::fileExist(std::string filename)
+{
+    std::ifstream file(filename, std::ios::binary);
+    return !file.eof();
+}
+
+void MainWindow::extraerDeArchivoBinario()
+{
+    std::ifstream file("indices.dat", std::ios::binary);
+    ArchivoStruct archivoStruct;
+    //int cont=0;
+
+    while(!file.eof()){
+        file.read((char*)&archivoStruct, sizeof(archivoStruct));
+
+        if(!file.eof()){
+            Archivo* archivo= new Archivo();
+            archivo->setNombre(archivoStruct);
+            archivo->setPath(archivoStruct);
+            archivo->ocurrencia->setTotalOcurrencias(archivoStruct.totalOcurrencias);
+            archivo->ocurrencia->setOcurrencia(archivoStruct.ocurrencia);
+
+            this->archivos.push_back(archivo);
+           // ++cont;
+        }
+    }
+    file.close();
+}
+
+ArchivoStruct MainWindow::returnStruct(Archivo *archivo)
+{
+    ArchivoStruct fileStr;
+    strcpy(fileStr.path, archivo->getPath());
+    strcpy(fileStr.nombre, archivo->getNombre());
+    strcpy(fileStr.ocurrencia, archivo->ocurrencia->getOcurrencia());
+    fileStr.totalOcurrencias = archivo->ocurrencia->getCantOcurrencias();
+    return fileStr;
+}
+
+
+
+
 void MainWindow::on_pushButton_clicked()
 {
     this->ui->tableView->show();
@@ -257,3 +327,4 @@ void MainWindow::on_pushButton_clicked()
     this->ui->nombreArchivo->hide();
     this->ui->pushButton->hide();
 }
+

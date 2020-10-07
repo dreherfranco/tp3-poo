@@ -1,5 +1,6 @@
 #include "pila.h"
-#include <iostream>
+#include <fstream>
+#include "string.h"
 
 Pila::Pila()
 {
@@ -8,8 +9,9 @@ Pila::Pila()
     this->cantNodos=0;
 }
 
-void Pila::add(int posOcurrencia, int linea)
+void Pila::add(int posOcurrencia, int linea, char* file)
 {
+    /*
     NodoP* nuevo_nodo = new NodoP;
     //Asigno los valores que contendran los nodos
     nuevo_nodo->posicionOcu = posOcurrencia;
@@ -22,27 +24,62 @@ void Pila::add(int posOcurrencia, int linea)
     }
 
     pila = nuevo_nodo;
+    */
+    //this->setNombreArchivo(file);
+
+    std::ofstream archivo("ocurrencias.dat",std::ios::binary | std::ios::out | std::ios::ate);
+    ocurrenciaStruct ocuStruct;
+
+    ocuStruct.pos = posOcurrencia;
+    ocuStruct.linea = linea;
+    strcpy(ocuStruct.nombreArch, file);
+    archivo.write((char*)&ocuStruct, sizeof (ocuStruct));
+
+    archivo.close();
 }
 
-int *Pila::getLinea_y_Pos()
+std::vector<ocurrenciaStruct> Pila::getLinea_y_Pos()
 {
-    int* aux = new int[2];
-    NodoP* nodoAux = pila;
-    //la posicion 0 del arreglo sera la posicion
-    aux[0] = nodoAux->posicionOcu;
-    //la posicion 1 sera la linea donde se encuentra la ocurrencia
-    aux[1] = nodoAux->linea;
-    pila = pila->sig;
-    delete nodoAux;
-    return aux;
+    std::ifstream file("ocurrencias.dat", std::ios::binary);
+     ocurrenciaStruct ocuStruct;
+    std::vector<ocurrenciaStruct> vectorOcs;
+
+    while(!file.eof()){
+        file.read((char*)&ocuStruct, sizeof (ocuStruct));
+
+        if(!file.eof()){
+            if(ocuStruct.nombreArch == this->nombreArchivo ){
+                vectorOcs.push_back(ocuStruct);
+            }
+        }
+    }
+    return vectorOcs;
 }
 
 int Pila::getCantNodos()
 {
-    return this->cantNodos;
+    std::ifstream file("ocurrencias.dat", std::ios::binary);
+     ocurrenciaStruct ocuStruct;
+     int cont=0;
+
+    while(!file.eof()){
+        file.read((char*)&ocuStruct, sizeof (ocuStruct));
+
+        if(!file.eof()){
+            if(ocuStruct.nombreArch == this->nombreArchivo ){
+                ++cont;
+            }
+        }
+    }
+    return cont;
 }
 
 void Pila::setCantNodos(int cantNodos)
 {
     this->cantNodos += cantNodos;
+}
+
+void Pila::setNombreArchivo(char *nombre)
+{
+    this->nombreArchivo = nombre;
 }

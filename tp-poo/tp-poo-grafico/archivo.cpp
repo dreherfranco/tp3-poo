@@ -20,14 +20,33 @@ void Archivo::setPath(char *path)
     this->path = path;
 }
 
+void Archivo::setPath(ArchivoStruct archivo)
+{
+    int tamanio = strlen(archivo.path);
+    this->path = new char[tamanio+1];
+    strcpy(this->path, archivo.path);
+}
+
 char *Archivo::getPath()
 {
     return this->path;
 }
 
+void Archivo::setTotalOcurrencias(int total)
+{
+    this->totalOcurrencias = total;
+}
+
 void Archivo::setNombre(char *nombre)
 {
     this->nombre = nombre;
+}
+
+void Archivo::setNombre(ArchivoStruct archivo)
+{
+    int tamanio = strlen(archivo.nombre);
+    this->nombre = new char[tamanio+1];
+    strcpy(this->nombre, archivo.nombre);
 }
 
 char *Archivo::getNombre()
@@ -79,7 +98,7 @@ char** Archivo::getLines(char *path, bool isOcurrencia){
             //cuenta la linea en la que se encuentra
             linea++;
             //Cuenta las ocurrencias por cada linea del archivo
-            this->ocurrencia->contOcurrencia(line, linea);
+            this->ocurrencia->contOcurrencia(line, linea, nombre);
 
         }else{
 
