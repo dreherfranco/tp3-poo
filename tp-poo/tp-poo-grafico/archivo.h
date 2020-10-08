@@ -2,13 +2,7 @@
 #define ARCHIVO_H
 #include "pila.h"
 #include "ocurrencia.h"
-
-struct ArchivoStruct{
-    char nombre[60];
-    char path[256];
-    char ocurrencia[60];
-    int totalOcurrencias;
-};
+#include "ArchivoStruct.h"
 
 class Archivo
 {

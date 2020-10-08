@@ -13,6 +13,7 @@ void Ocurrencia::contOcurrencia(char* lineaArchivo, int linea, char* file)
     int cuentaOcurrencia = 0;
     int j = 0;
     int i=0;
+    bool band = false;
 
     while(lineaArchivo[i] != '\0'){
 
@@ -25,26 +26,27 @@ void Ocurrencia::contOcurrencia(char* lineaArchivo, int linea, char* file)
 
                 //Agrego una ocurrencia a la pila con su posicion i donde se encuentra en el archivo de texto, y la linea
                 //********************//
-                this->pila->add(i-tamanioOcu+1, linea, file);
+                this->pila->add(i-tamanioOcu+1, linea, file, this->ocurrencia);
                 //*******************//
-
+                band = true;
             }
+
             j++;
             //la variable i tendra que ir a la par de j para comparar en la siguiente iteracion
-            i++;
-            if(strlen(lineaArchivo) < i)
-                break;
+            if(!band)
+                i++;
+            else
+                band = false;
+
         }
 
-        if(strlen(lineaArchivo) < i)
-            break;
         //se reinicia a 0 para volver a comprobar si hay ocurrencias una vez que termine la estructura while
         j=0;
         //contador del primer while
         i++;
     }
     //Setea la cantidad de nodos que tiene la pila
-    this->setTotalOcurrencias(cuentaOcurrencia);
+    this->pila->setCantNodos(cuentaOcurrencia);
 }
 
 char *Ocurrencia::getOcurrencia()
@@ -54,6 +56,13 @@ char *Ocurrencia::getOcurrencia()
 
 void Ocurrencia::setOcurrencia(char *ocu){
     this->ocurrencia = ocu;
+}
+
+void Ocurrencia::setOcurrencia(ArchivoStruct archivo)
+{
+    int tamanio = strlen(archivo.ocurrencia);
+    this->ocurrencia = new char[tamanio+1];
+    strcpy(this->ocurrencia, archivo.ocurrencia);
 }
 
 void Ocurrencia::setTamanioOcu(int tamanio)
@@ -71,9 +80,9 @@ int Ocurrencia::getCantOcurrencias()
     return totalOcurrencias;
 }
 
-std::vector<ocurrenciaStruct> Ocurrencia::getLinea_yPos()
+std::vector<ocurrenciaStruct> Ocurrencia::getLinea_yPos(char* nombreArchivo)
 {
-    return this->pila->getLinea_y_Pos();
+    return this->pila->getLinea_y_Pos(this->ocurrencia, nombreArchivo);
 }
 
 void Ocurrencia::setNombreArchivo(char *file)
@@ -84,4 +93,9 @@ void Ocurrencia::setNombreArchivo(char *file)
 int Ocurrencia::getCantNodos()
 {
     return pila->getCantNodos();
+}
+
+void Ocurrencia::addBinario()
+{
+    this->pila->addBinario();
 }

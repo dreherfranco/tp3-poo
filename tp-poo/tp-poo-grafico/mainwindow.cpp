@@ -39,8 +39,10 @@ bool ordenar(Archivo *archivo1, Archivo *archivo2)
 
 void MainWindow::on_botonBuscar_clicked()
 {
+
     //Limpia la tableView
     this->ui->tableView->reset();
+    this->archivos.clear();
 
     //Tamanio ocurrencia
     this->longOcu = this->ui->ocurrencia->text().length();
@@ -120,10 +122,8 @@ void MainWindow::on_botonBuscar_clicked()
 
             //Le paso true por parametro para que cuente las ocurrencias
             archivo->getLines(filename,true);
-
+            archivo->ocurrencia->addBinario();
             //Asigno el archivo creado por cada iteracion a un indice del arreglo de archivos
-
-            //this->archivos[j] = archivo;
 
             ArchivoStruct structArch = this->returnStruct(archivo);
             binaryFileWrite.write((char*)&structArch, sizeof(structArch));
@@ -135,20 +135,6 @@ void MainWindow::on_botonBuscar_clicked()
         this->extraerDeArchivoBinario();
     }
 
-
-        //Ordenar los archivos segun las ocurrencias
-        /*for(i=0; i<cantArchivos-1; i++){
-            for(int j=i+1; j<cantArchivos; j++){
-                if(this->archivos[i]->ocurrencia->getCantOcurrencias() < this->archivos[j]->ocurrencia->getCantOcurrencias()){
-                    //ordenamiento
-                    Archivo* archivoAux = new Archivo();
-                    archivoAux = this->archivos[i];
-                    this->archivos[i] = this->archivos[j];
-                    this->archivos[j] = archivoAux;
-
-                }
-            }
-        }*/
 
     std::sort(this->archivos.begin(), this->archivos.end(), &ordenar);
 
@@ -212,8 +198,6 @@ void MainWindow::on_tableView_doubleClicked(const QModelIndex &index)
 
         Archivo* archivo = new Archivo();
 
-
-
         //Lineas del archivo de texto contenidas en un char**
         char** lines = archivo->getLines(filename);
 
@@ -238,18 +222,29 @@ void MainWindow::on_tableView_doubleClicked(const QModelIndex &index)
         QByteArray ocu = this->ui->ocurrencia->text().toLatin1();
         this->ocurrencia = ocu.data();
 
-        archivo->ocurrencia->setTamanioOcu(this->longOcu);
-        archivo->ocurrencia->setOcurrencia(this->ocurrencia);
-        archivo->getLines(filename,true);
+       // archivo->ocurrencia->setTamanioOcu(this->longOcu);
+       // archivo->ocurrencia->setOcurrencia(this->ocurrencia);
+       // archivo->getLines(filename,true);
+        //Busca el archivo para poder abrirlo luego
+        for(std::vector<Archivo*>::iterator it = this->archivos.begin();it < this->archivos.end(); ++it){
+            Archivo* archivoIt = *it;
+            if(strcmp(archivoIt->getPath(), filename)==0){
+                archivo = archivoIt;
+                break;
+            }
+        }
+
 
         QString aInsertar;
-        int cantNodos = archivo->ocurrencia->getCantNodos();
+        int cantNodos = archivo->ocurrencia->getCantOcurrencias();
 
-        std::vector<ocurrenciaStruct> vecOcurrencias = archivo->ocurrencia->getLinea_yPos();
+        std::vector<ocurrenciaStruct> vecOcurrencias = archivo->ocurrencia->getLinea_yPos(archivo->getNombre());
 
-        for(int i=0; i<cantNodos; i++){
-            //Linea y posicion donde se encontro la ocurrencia
-            aInsertar.prepend(QString::number(vecOcurrencias[i].pos)+"\t"+QString::number(vecOcurrencias[i].linea)+"\n");
+        if(!vecOcurrencias.empty()){
+            for(int i=0; i<cantNodos; i++){
+                //Linea y posicion donde se encontro la ocurrencia
+                aInsertar.prepend(QString::number(vecOcurrencias[i].pos)+"\t"+QString::number(vecOcurrencias[i].linea)+"\n");
+            }
         }
         aInsertar.prepend("Posicion\tLinea\n");
 
@@ -287,20 +282,20 @@ void MainWindow::extraerDeArchivoBinario()
 {
     std::ifstream file("indices.dat", std::ios::binary);
     ArchivoStruct archivoStruct;
-    //int cont=0;
 
     while(!file.eof()){
         file.read((char*)&archivoStruct, sizeof(archivoStruct));
 
         if(!file.eof()){
-            Archivo* archivo= new Archivo();
-            archivo->setNombre(archivoStruct);
-            archivo->setPath(archivoStruct);
-            archivo->ocurrencia->setTotalOcurrencias(archivoStruct.totalOcurrencias);
-            archivo->ocurrencia->setOcurrencia(archivoStruct.ocurrencia);
+            if(strcmp(archivoStruct.ocurrencia, this->ocurrencia) == 0){
+                Archivo* archivo= new Archivo();
+                archivo->setNombre(archivoStruct);
+                archivo->setPath(archivoStruct);
+                archivo->ocurrencia->setTotalOcurrencias(archivoStruct.totalOcurrencias);
+                archivo->ocurrencia->setOcurrencia(archivoStruct);
 
-            this->archivos.push_back(archivo);
-           // ++cont;
+                this->archivos.push_back(archivo);
+             }
         }
     }
     file.close();
@@ -312,7 +307,7 @@ ArchivoStruct MainWindow::returnStruct(Archivo *archivo)
     strcpy(fileStr.path, archivo->getPath());
     strcpy(fileStr.nombre, archivo->getNombre());
     strcpy(fileStr.ocurrencia, archivo->ocurrencia->getOcurrencia());
-    fileStr.totalOcurrencias = archivo->ocurrencia->getCantOcurrencias();
+    fileStr.totalOcurrencias = archivo->ocurrencia->getCantNodos();
     return fileStr;
 }
 

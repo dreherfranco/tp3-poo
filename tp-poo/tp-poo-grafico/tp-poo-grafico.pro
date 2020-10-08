@@ -24,6 +24,7 @@ SOURCES += \
     pila.cpp
 
 HEADERS += \
+    ArchivoStruct.h \
     archivo.h \
     directorio.h \
     mainwindow.h \
