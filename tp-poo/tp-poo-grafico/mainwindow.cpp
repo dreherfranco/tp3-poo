@@ -86,8 +86,8 @@ void MainWindow::on_botonBuscar_clicked()
 
     std::ifstream binaryFileRead(nombreArchivoBin,std::ios::binary);
 
-    if(fileExist(nombreArchivoBin)){
-        std::ofstream binaryFileWrite(nombreArchivoBin,std::ios::binary | std::ios::out | std::ios::ate);
+    if(!fileExist(nombreArchivoBin)){
+        std::ofstream binaryFileWrite(nombreArchivoBin,std::ios::binary | std::ios::out | std::ios::app);
         //Recorro la variables listaArchivos y creo los items de la tabla
         for(int j=0; j<cantArchivos; j++){
 
@@ -122,7 +122,7 @@ void MainWindow::on_botonBuscar_clicked()
 
             //Le paso true por parametro para que cuente las ocurrencias
             archivo->getLines(filename,true);
-            archivo->ocurrencia->addBinario();
+            //archivo->ocurrencia->addBinario();
             //Asigno el archivo creado por cada iteracion a un indice del arreglo de archivos
 
             ArchivoStruct structArch = this->returnStruct(archivo);
@@ -275,7 +275,7 @@ QByteArray MainWindow::ignorarPreposiciones(QByteArray ocurrencia){
 bool MainWindow::fileExist(std::string filename)
 {
     std::ifstream file(filename, std::ios::binary);
-    return !file.eof();
+    return file.good();
 }
 
 void MainWindow::extraerDeArchivoBinario()

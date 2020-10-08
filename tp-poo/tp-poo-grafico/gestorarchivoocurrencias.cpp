@@ -1,15 +1,13 @@
-#include "pila.h"
-#include <fstream>
+#include "gestorarchivoocurrencias.h"
 #include "string.h"
+#include "fstream"
 
-Pila::Pila()
+GestorArchivoOcurrencias::GestorArchivoOcurrencias()
 {
-    this->pila = new NodoP;
-    this->pila = NULL;
-    this->cantNodos=0;
+
 }
 
-/*void Pila::add(int posOcurrencia, int linea, char* file,char* ocurrencia)
+void GestorArchivoOcurrencias::add(int posOcurrencia, int linea, char* file,char* ocurrencia)
 {
     std::ofstream archivo;
     ocurrenciaStruct ocuStruct;
@@ -24,7 +22,7 @@ Pila::Pila()
     archivo.close();
 }
 
-std::vector<ocurrenciaStruct> Pila::getLinea_y_Pos(char* ocurrencia, char* nombreArchivo)
+std::vector<ocurrenciaStruct> GestorArchivoOcurrencias::getLinea_y_Pos(char* ocurrencia, char* nombreArchivo)
 {
     std::ifstream file("ocurrencias.dat", std::ios::binary | std::ios::in );
      ocurrenciaStruct ocuStruct;
@@ -39,17 +37,17 @@ std::vector<ocurrenciaStruct> Pila::getLinea_y_Pos(char* ocurrencia, char* nombr
     return vectorOcs;
 }
 
-int Pila::getCantNodos()
+int GestorArchivoOcurrencias::getCantNodos()
 {
     return cantNodos;
 }
 
-void Pila::setCantNodos(int cantNodos)
+void GestorArchivoOcurrencias::setCantNodos(int cantNodos)
 {
     this->cantNodos += cantNodos;
 }
 
-void Pila::setNombreArchivo(char *nombre)
+void GestorArchivoOcurrencias::setNombreArchivo(char *nombre)
 {
     this->nombreArchivo = nombre;
-}*/
+}

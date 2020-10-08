@@ -11,12 +11,7 @@ struct NodoP{
     NodoP* sig;
 };
 
-struct ocurrenciaStruct{
-    int linea;
-    int pos;
-    char nombreArch[60];
-    char ocurrencia[60];
-};
+
 
 class Pila
 {
@@ -26,12 +21,12 @@ private:
     char* nombreArchivo;
 public:
     Pila();
-    void add(int posOcurrencia, int linea,char* file, char* ocurrencia);
-    std::vector<ocurrenciaStruct> getLinea_y_Pos(char* ocurrencia,char* nombreArchivo);
+    /*void add(int posOcurrencia, int linea,char* file, char* ocurrencia);
+    //std::vector<ocurrenciaStruct> getLinea_y_Pos(char* ocurrencia,char* nombreArchivo);
     int getCantNodos();
     void setCantNodos(int cantNodos);
     void setNombreArchivo(char* nombre);
-    void addBinario();
+*/
 };
 
 #endif // PILA_H

@@ -4,9 +4,8 @@
 
 Ocurrencia::Ocurrencia()
 {
-    this->pila = new Pila();
-    this->nodo = new NodoP;
-    this->nodo = NULL;
+    this->gestor = new GestorArchivoOcurrencias();
+
 }
 void Ocurrencia::contOcurrencia(char* lineaArchivo, int linea, char* file)
 {
@@ -26,7 +25,7 @@ void Ocurrencia::contOcurrencia(char* lineaArchivo, int linea, char* file)
 
                 //Agrego una ocurrencia a la pila con su posicion i donde se encuentra en el archivo de texto, y la linea
                 //********************//
-                this->pila->add(i-tamanioOcu+1, linea, file, this->ocurrencia);
+                this->gestor->add(i-tamanioOcu+1, linea, file, this->ocurrencia);
                 //*******************//
                 band = true;
             }
@@ -46,7 +45,7 @@ void Ocurrencia::contOcurrencia(char* lineaArchivo, int linea, char* file)
         i++;
     }
     //Setea la cantidad de nodos que tiene la pila
-    this->pila->setCantNodos(cuentaOcurrencia);
+    this->gestor->setCantNodos(cuentaOcurrencia);
 }
 
 char *Ocurrencia::getOcurrencia()
@@ -82,20 +81,16 @@ int Ocurrencia::getCantOcurrencias()
 
 std::vector<ocurrenciaStruct> Ocurrencia::getLinea_yPos(char* nombreArchivo)
 {
-    return this->pila->getLinea_y_Pos(this->ocurrencia, nombreArchivo);
+    return this->gestor->getLinea_y_Pos(this->ocurrencia, nombreArchivo);
 }
 
 void Ocurrencia::setNombreArchivo(char *file)
 {
-    this->pila->setNombreArchivo(file);
+    this->gestor->setNombreArchivo(file);
 }
 
 int Ocurrencia::getCantNodos()
 {
-    return pila->getCantNodos();
+    return gestor->getCantNodos();
 }
 
-void Ocurrencia::addBinario()
-{
-    this->pila->addBinario();
-}

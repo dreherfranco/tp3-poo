@@ -1,8 +1,8 @@
 #ifndef OCURRENCIA_H
 #define OCURRENCIA_H
-#include "pila.h"
+//#include "pila.h"
 #include "ArchivoStruct.h"
-
+#include "gestorarchivoocurrencias.h"
 class Ocurrencia
 {
 private:
@@ -10,8 +10,7 @@ private:
     int tamanioOcu;
     int totalOcurrencias;
     //Donde se guardan las ocurrencias con sus posiciones y la cantidad de ocurrencias encontradas
-    Pila* pila;
-    NodoP* nodo;
+    GestorArchivoOcurrencias* gestor;
 
 public:
     Ocurrencia();
