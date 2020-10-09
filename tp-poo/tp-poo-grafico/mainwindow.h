@@ -25,6 +25,10 @@ private slots:
 
     void on_pushButton_clicked();
 
+    void on_buttonSaveChanges_clicked();
+
+    void on_buttonDontSaveChanges_clicked();
+
 private:
     Ui::MainWindow *ui;
     const char* path;
@@ -37,8 +41,9 @@ private:
 
     QByteArray ignorarPreposiciones(QByteArray ocurrencia);
     bool fileExist(std::string filename);
+    void insertarEnBinario();
     void extraerDeArchivoBinario();
    ArchivoStruct returnStruct(Archivo* archivo);
-
+    void ocultarGraficosDeGuardado();
 };
 #endif // MAINWINDOW_H

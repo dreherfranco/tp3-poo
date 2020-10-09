@@ -18,7 +18,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     archivo.cpp \
     directorio.cpp \
-    gestorarchivoocurrencias.cpp \
     main.cpp \
     mainwindow.cpp \
     ocurrencia.cpp
@@ -27,9 +26,9 @@ HEADERS += \
     ArchivoStruct.h \
     archivo.h \
     directorio.h \
-    gestorarchivoocurrencias.h \
     mainwindow.h \
-    ocurrencia.h
+    ocurrencia.h \
+    ocurrenciaStruct.h
 
 FORMS += \
     mainwindow.ui

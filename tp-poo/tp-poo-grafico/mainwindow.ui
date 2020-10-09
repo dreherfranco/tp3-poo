@@ -282,6 +282,74 @@
      <string>Volver a atras</string>
     </property>
    </widget>
+   <widget class="QLabel" name="labelSaveChanges">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>290</y>
+      <width>221</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>El archivo no existe, desea guardar cambios?</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="buttonSaveChanges">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>352</y>
+      <width>81</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Si</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="buttonDontSaveChanges">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>350</y>
+      <width>81</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>No</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelChangesSaved">
+    <property name="geometry">
+     <rect>
+      <x>446</x>
+      <y>410</y>
+      <width>111</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="mouseTracking">
+     <bool>false</bool>
+    </property>
+    <property name="text">
+     <string>Cambios guardados</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelUnsavedChanges">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>410</y>
+      <width>111</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Los cambios no se guardaron</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

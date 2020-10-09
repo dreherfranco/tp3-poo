@@ -18,7 +18,11 @@ MainWindow::MainWindow(QWidget *parent)
     this->ui->tableView->hide();
     this->ui->ocurrenciasFinded->hide();
     this->ui->pushButton->hide();
-
+    this->ui->labelSaveChanges->hide();
+    this->ui->buttonSaveChanges->hide();
+    this->ui->buttonDontSaveChanges->hide();
+    this->ui->labelUnsavedChanges->hide();
+    this->ui->labelChangesSaved->hide();
     /*QPalette Pal(palette());
     Pal.setColor(QPalette::Background, "#4f4f4f");
     this->setAutoFillBackground(true);
@@ -79,15 +83,8 @@ void MainWindow::on_botonBuscar_clicked()
     int cantArchivos = directorio->getCantArchivos();
     delete this->directorio;
 
-    //Instancio el arreglo de archivos, la cual ayudara a ordenarlos posteriormente por ocurrencias encontradas
-   // this->archivos = new Archivo*[cantArchivos+1];
+    if(!fileExist("indices.dat")){
 
-    std::string nombreArchivoBin = "indices.dat";
-
-    std::ifstream binaryFileRead(nombreArchivoBin,std::ios::binary);
-
-    if(!fileExist(nombreArchivoBin)){
-        std::ofstream binaryFileWrite(nombreArchivoBin,std::ios::binary | std::ios::out | std::ios::app);
         //Recorro la variables listaArchivos y creo los items de la tabla
         for(int j=0; j<cantArchivos; j++){
 
@@ -122,14 +119,16 @@ void MainWindow::on_botonBuscar_clicked()
 
             //Le paso true por parametro para que cuente las ocurrencias
             archivo->getLines(filename,true);
-            //archivo->ocurrencia->addBinario();
-            //Asigno el archivo creado por cada iteracion a un indice del arreglo de archivos
 
-            ArchivoStruct structArch = this->returnStruct(archivo);
-            binaryFileWrite.write((char*)&structArch, sizeof(structArch));
+            //Asigno el archivo creado por cada iteracion a un indice del arreglo de archivos
+            this->archivos.push_back(archivo);
+
         }
-        binaryFileWrite.close();
-        this->extraerDeArchivoBinario();
+        this->ui->labelSaveChanges->show();
+        this->ui->buttonSaveChanges->show();
+        this->ui->buttonDontSaveChanges->show();
+
+
 
     }else{
         this->extraerDeArchivoBinario();
@@ -170,6 +169,8 @@ void MainWindow::on_botonBuscar_clicked()
 
 void MainWindow::on_tableView_doubleClicked(const QModelIndex &index)
 {
+    this->ui->labelUnsavedChanges->hide();
+    this->ui->labelChangesSaved->hide();
     this->ui->nombreArchivo->show();
     this->ui->pushButton->show();
     //seteo vacio el QTextEdit por si quiero abrir otro archivo de texto a mostrar
@@ -214,17 +215,12 @@ void MainWindow::on_tableView_doubleClicked(const QModelIndex &index)
         this->ui->mostrarArchivo->setText(total_Lines);
         this->ui->mostrarArchivo->show();
 
-
-
         //Si se hace doble click en la columna de ocurrencias
         this->longOcu = this->ui->ocurrencia->text().length();
         this->ocurrencia = new char[longOcu+1];
         QByteArray ocu = this->ui->ocurrencia->text().toLatin1();
         this->ocurrencia = ocu.data();
 
-       // archivo->ocurrencia->setTamanioOcu(this->longOcu);
-       // archivo->ocurrencia->setOcurrencia(this->ocurrencia);
-       // archivo->getLines(filename,true);
         //Busca el archivo para poder abrirlo luego
         for(std::vector<Archivo*>::iterator it = this->archivos.begin();it < this->archivos.end(); ++it){
             Archivo* archivoIt = *it;
@@ -238,6 +234,7 @@ void MainWindow::on_tableView_doubleClicked(const QModelIndex &index)
         QString aInsertar;
         int cantNodos = archivo->ocurrencia->getCantOcurrencias();
 
+        archivo->ocurrencia->setOcurrencia(this->ocurrencia);
         std::vector<ocurrenciaStruct> vecOcurrencias = archivo->ocurrencia->getLinea_yPos(archivo->getNombre());
 
         if(!vecOcurrencias.empty()){
@@ -278,6 +275,19 @@ bool MainWindow::fileExist(std::string filename)
     return file.good();
 }
 
+void MainWindow::insertarEnBinario()
+{
+     std::ofstream binaryFileWrite("indices.dat",std::ios::binary | std::ios::out | std::ios::app);
+    Archivo* archivo;
+
+    for(std::vector<Archivo*>::iterator it = this->archivos.begin(); it != this->archivos.end(); ++it){
+        archivo = *it;
+        ArchivoStruct structArch = this->returnStruct(archivo);
+        binaryFileWrite.write((char*)&structArch, sizeof(structArch));
+    }
+    binaryFileWrite.close();
+}
+
 void MainWindow::extraerDeArchivoBinario()
 {
     std::ifstream file("indices.dat", std::ios::binary);
@@ -307,11 +317,9 @@ ArchivoStruct MainWindow::returnStruct(Archivo *archivo)
     strcpy(fileStr.path, archivo->getPath());
     strcpy(fileStr.nombre, archivo->getNombre());
     strcpy(fileStr.ocurrencia, archivo->ocurrencia->getOcurrencia());
-    fileStr.totalOcurrencias = archivo->ocurrencia->getCantNodos();
+    fileStr.totalOcurrencias = archivo->ocurrencia->getCantOcurrencias();
     return fileStr;
 }
-
-
 
 
 void MainWindow::on_pushButton_clicked()
@@ -323,3 +331,26 @@ void MainWindow::on_pushButton_clicked()
     this->ui->pushButton->hide();
 }
 
+
+void MainWindow::on_buttonSaveChanges_clicked()
+{
+    this->insertarEnBinario();
+    this->ocultarGraficosDeGuardado();
+    this->ui->labelChangesSaved->show();
+}
+
+void MainWindow::ocultarGraficosDeGuardado()
+{
+    this->ui->labelSaveChanges->hide();
+    this->ui->buttonSaveChanges->hide();
+    this->ui->buttonDontSaveChanges->hide();
+
+}
+
+void MainWindow::on_buttonDontSaveChanges_clicked()
+{
+    this->insertarEnBinario();
+    this->ocultarGraficosDeGuardado();
+    this->ui->labelUnsavedChanges->show();
+
+}

@@ -1,6 +1,6 @@
 #ifndef ARCHIVO_H
 #define ARCHIVO_H
-#include "gestorarchivoocurrencias.h"
+//#include "gestorarchivoocurrencias.h"
 #include "ocurrencia.h"
 #include "ArchivoStruct.h"
 

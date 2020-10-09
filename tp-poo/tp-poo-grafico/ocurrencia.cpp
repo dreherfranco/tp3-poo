@@ -1,11 +1,11 @@
 #include "ocurrencia.h"
 #include <iostream>
 #include "string.h"
+#include "fstream"
 
 Ocurrencia::Ocurrencia()
 {
-    this->gestor = new GestorArchivoOcurrencias();
-
+    this->totalOcurrencias = 0;
 }
 void Ocurrencia::contOcurrencia(char* lineaArchivo, int linea, char* file)
 {
@@ -23,10 +23,9 @@ void Ocurrencia::contOcurrencia(char* lineaArchivo, int linea, char* file)
                 //Cuenta la ocurrencia una vez que la cantidad del vector sea igual al valor que haya acumulado j
                 cuentaOcurrencia++;
 
-                //Agrego una ocurrencia a la pila con su posicion i donde se encuentra en el archivo de texto, y la linea
-                //********************//
-                this->gestor->add(i-tamanioOcu+1, linea, file, this->ocurrencia);
-                //*******************//
+                //agrega linea linea y posicion al binario
+                this->add_aBinario(i-tamanioOcu+1, linea, file);
+
                 band = true;
             }
 
@@ -45,7 +44,7 @@ void Ocurrencia::contOcurrencia(char* lineaArchivo, int linea, char* file)
         i++;
     }
     //Setea la cantidad de nodos que tiene la pila
-    this->gestor->setCantNodos(cuentaOcurrencia);
+    this->setTotalOcurrencias(cuentaOcurrencia);
 }
 
 char *Ocurrencia::getOcurrencia()
@@ -71,7 +70,7 @@ void Ocurrencia::setTamanioOcu(int tamanio)
 
 void Ocurrencia::setTotalOcurrencias(int total)
 {
-    this->totalOcurrencias = total;
+    this->totalOcurrencias += total;
 }
 
 int Ocurrencia::getCantOcurrencias()
@@ -81,16 +80,40 @@ int Ocurrencia::getCantOcurrencias()
 
 std::vector<ocurrenciaStruct> Ocurrencia::getLinea_yPos(char* nombreArchivo)
 {
-    return this->gestor->getLinea_y_Pos(this->ocurrencia, nombreArchivo);
+    std::ifstream file("ocurrencias.dat", std::ios::binary | std::ios::in );
+     ocurrenciaStruct ocuStruct;
+    std::vector<ocurrenciaStruct> vectorOcs;
+
+    while(!file.eof()){
+
+        file.read((char*)&ocuStruct, sizeof (ocuStruct));
+        if(!file.eof()){
+                if(strcmp(ocuStruct.nombreArch , nombreArchivo)==0 && strcmp(ocuStruct.ocurrencia, ocurrencia)==0){
+                vectorOcs.push_back(ocuStruct);
+            }
+        }
+       }
+    file.close();
+    return vectorOcs;
 }
 
-void Ocurrencia::setNombreArchivo(char *file)
+
+void Ocurrencia::add_aBinario(int posOcurrencia, int linea, char* file)
 {
-    this->gestor->setNombreArchivo(file);
+    std::ofstream archivo;
+    ocurrenciaStruct ocuStruct;
+    archivo.open("ocurrencias.dat",std::ios::binary | std::ios::out | std::ios::app);
+
+    ocuStruct.pos = posOcurrencia;
+    ocuStruct.linea = linea;
+    strcpy(ocuStruct.ocurrencia, this->ocurrencia);
+    strcpy(ocuStruct.nombreArch, file);
+    archivo.write((char*)&ocuStruct, sizeof (ocuStruct));
+
+    archivo.close();
 }
 
-int Ocurrencia::getCantNodos()
+void Ocurrencia::setNombreArchivo(char *nombre)
 {
-    return gestor->getCantNodos();
+    this->nombreArchivo = nombre;
 }
-
