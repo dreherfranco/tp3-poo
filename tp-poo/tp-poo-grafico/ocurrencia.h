@@ -1,8 +1,6 @@
 #ifndef OCURRENCIA_H
 #define OCURRENCIA_H
-//#include "pila.h"
 #include "ArchivoStruct.h"
-//#include "gestorarchivoocurrencias.h"
 #include "vector"
 #include "ocurrenciaStruct.h"
 

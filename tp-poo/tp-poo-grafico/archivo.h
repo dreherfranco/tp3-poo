@@ -1,6 +1,5 @@
 #ifndef ARCHIVO_H
 #define ARCHIVO_H
-//#include "gestorarchivoocurrencias.h"
 #include "ocurrencia.h"
 #include "ArchivoStruct.h"
 
@@ -19,6 +18,7 @@ public:
     void setPath(char* path);
     void setPath(ArchivoStruct archivo);
     char* getPath();
+
     void setTotalOcurrencias(int total);
 
     void setNombre(char* nombre);
@@ -26,12 +26,10 @@ public:
     char* getNombre();
 
     int getCantidadCaracteres();
-
-    char** getLines(char *path, bool isOcurrencia = false);
+    char** getLines(char *path);
     void addLine(char* line);
-
     int getCantLines();
-
+    void setearOcurrencias(char* path);
 };
 
 #endif // ARCHIVO_H

@@ -74,7 +74,7 @@ int Archivo::getCantidadCaracteres()
 
 
 //Obtener todas las lineas que contiene el archivo
-char** Archivo::getLines(char *path, bool isOcurrencia){
+char** Archivo::getLines(char *path){
     std::ifstream archivo;
     int linea = 0;
     int longitudLinea;
@@ -89,23 +89,12 @@ char** Archivo::getLines(char *path, bool isOcurrencia){
         longitudLinea = buffer.length();
 
         char* line = nullptr;
-        //Asigno memoria a buffer, esta almacenara la linea, +1 que es el salto de linea
         line = new char[longitudLinea+1];
-        //Copio lo que hay en el string line en buffer
         strcpy(line, buffer.c_str());
 
-        if(isOcurrencia){
-            //cuenta la linea en la que se encuentra
-            linea++;
-            //Cuenta las ocurrencias por cada linea del archivo
-            this->ocurrencia->contOcurrencia(line, linea, nombre);
-
-        }else{
-
-        //Agrego una linea a la propiedad del objeto this->lines
+        //Agrego una linea del archivo por cada iteracion a this->lines
         addLine(line);
         }
-    }
 
     //Devuelve todas las lineas del archivo
     return this->lines;
@@ -129,6 +118,32 @@ void Archivo::addLine(char *line)
 int Archivo::getCantLines()
 {
     return cantLines;
+}
+
+void Archivo::setearOcurrencias(char *path)
+{
+    std::ifstream archivo;
+    int posicionLinea = 0;
+    int longitudLinea;
+    std::string buffer;
+
+    archivo.open(path);
+
+    while(!archivo.eof()){
+        //Obtengo la linea del archivo
+        getline(archivo, buffer);
+        //Longitud de los caracteres de la linea
+        longitudLinea = buffer.length();
+
+        char* line = nullptr;
+        line = new char[longitudLinea+1];
+        strcpy(line, buffer.c_str());
+
+        //cuenta la linea en la que se encuentra
+        posicionLinea++;
+        //Cuenta las ocurrencias por cada linea del archivo
+        this->ocurrencia->contOcurrencia(line, posicionLinea, nombre);
+    }
 }
 
 

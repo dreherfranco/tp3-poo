@@ -23,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
     this->ui->buttonDontSaveChanges->hide();
     this->ui->labelUnsavedChanges->hide();
     this->ui->labelChangesSaved->hide();
+    this->guardarArchivo = false;
     /*QPalette Pal(palette());
     Pal.setColor(QPalette::Background, "#4f4f4f");
     this->setAutoFillBackground(true);
@@ -43,6 +44,11 @@ bool ordenar(Archivo *archivo1, Archivo *archivo2)
 
 void MainWindow::on_botonBuscar_clicked()
 {
+    if(!this->fileExist("indices.dat") && !this->guardarArchivo){
+        this->ui->labelSaveChanges->show();
+        this->ui->buttonSaveChanges->show();
+        this->ui->buttonDontSaveChanges->show();
+    }
 
     //Limpia la tableView
     this->ui->tableView->reset();
@@ -118,15 +124,16 @@ void MainWindow::on_botonBuscar_clicked()
             archivo->ocurrencia->setOcurrencia(this->ocurrencia);
 
             //Le paso true por parametro para que cuente las ocurrencias
-            archivo->getLines(filename,true);
+            archivo->setearOcurrencias(filename);
 
             //Asigno el archivo creado por cada iteracion a un indice del arreglo de archivos
             this->archivos.push_back(archivo);
 
         }
-        this->ui->labelSaveChanges->show();
-        this->ui->buttonSaveChanges->show();
-        this->ui->buttonDontSaveChanges->show();
+
+          if(this->guardarArchivo){
+              this->insertarEnBinario();
+          }
 
 
 
@@ -165,6 +172,7 @@ void MainWindow::on_botonBuscar_clicked()
     this->ui->tableView->resizeColumnToContents(1);
     this->ui->tableView->resizeColumnToContents(2);
     this->ui->tableView->show();
+
 }
 
 void MainWindow::on_tableView_doubleClicked(const QModelIndex &index)
@@ -272,7 +280,9 @@ QByteArray MainWindow::ignorarPreposiciones(QByteArray ocurrencia){
 bool MainWindow::fileExist(std::string filename)
 {
     std::ifstream file(filename, std::ios::binary);
-    return file.good();
+    bool good = file.good();
+    file.close();
+    return good;
 }
 
 void MainWindow::insertarEnBinario()
@@ -316,7 +326,7 @@ ArchivoStruct MainWindow::returnStruct(Archivo *archivo)
     ArchivoStruct fileStr;
     strcpy(fileStr.path, archivo->getPath());
     strcpy(fileStr.nombre, archivo->getNombre());
-    strcpy(fileStr.ocurrencia, archivo->ocurrencia->getOcurrencia());
+    strcpy(fileStr.ocurrencia, this->ocurrencia);
     fileStr.totalOcurrencias = archivo->ocurrencia->getCantOcurrencias();
     return fileStr;
 }
@@ -334,7 +344,7 @@ void MainWindow::on_pushButton_clicked()
 
 void MainWindow::on_buttonSaveChanges_clicked()
 {
-    this->insertarEnBinario();
+    this->guardarArchivo = true;
     this->ocultarGraficosDeGuardado();
     this->ui->labelChangesSaved->show();
 }
@@ -344,13 +354,11 @@ void MainWindow::ocultarGraficosDeGuardado()
     this->ui->labelSaveChanges->hide();
     this->ui->buttonSaveChanges->hide();
     this->ui->buttonDontSaveChanges->hide();
-
 }
 
 void MainWindow::on_buttonDontSaveChanges_clicked()
 {
-    this->insertarEnBinario();
+    this->guardarArchivo = false;
     this->ocultarGraficosDeGuardado();
     this->ui->labelUnsavedChanges->show();
-
 }

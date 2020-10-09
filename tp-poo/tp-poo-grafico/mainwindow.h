@@ -32,18 +32,18 @@ private slots:
 private:
     Ui::MainWindow *ui;
     const char* path;
-
     Directorio* directorio;
-    //Archivo** archivos;
     std::vector<Archivo*> archivos;
     char* ocurrencia;
     int longOcu;
+    bool guardarArchivo;
 
     QByteArray ignorarPreposiciones(QByteArray ocurrencia);
     bool fileExist(std::string filename);
     void insertarEnBinario();
     void extraerDeArchivoBinario();
-   ArchivoStruct returnStruct(Archivo* archivo);
+    ArchivoStruct returnStruct(Archivo* archivo);
     void ocultarGraficosDeGuardado();
+
 };
 #endif // MAINWINDOW_H
