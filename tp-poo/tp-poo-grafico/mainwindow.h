@@ -29,6 +29,10 @@ private slots:
 
     void on_buttonDontSaveChanges_clicked();
 
+    void on_buttonUpdate_clicked();
+
+    void on_buttonNoUpdate_clicked();
+
 private:
     Ui::MainWindow *ui;
     const char* path;
@@ -37,6 +41,7 @@ private:
     char* ocurrencia;
     int longOcu;
     bool guardarArchivo;
+    bool actualizarArchivo;
 
     QByteArray ignorarPreposiciones(QByteArray ocurrencia);
     bool fileExist(std::string filename);
@@ -44,6 +49,8 @@ private:
     void extraerDeArchivoBinario();
     ArchivoStruct returnStruct(Archivo* archivo);
     void ocultarGraficosDeGuardado();
-
+    std::vector<ArchivoStruct> leerRegistrosDeBinario();
+    void actualizarBinario();
+    void filtrarArchivos(char** listaArchivos, int cantArchivos, QByteArray conversionRuta, QByteArray ocurrencia );
 };
 #endif // MAINWINDOW_H

@@ -29,6 +29,7 @@ public:
     void setNombreArchivo(char* nombre);
     int getCantNodos();
     void add_aBinario(int posOcurrencia, int linea, char* file);
+    void actualizarBinarioOcurrencias();
 };
 
 #endif // OCURRENCIA_H

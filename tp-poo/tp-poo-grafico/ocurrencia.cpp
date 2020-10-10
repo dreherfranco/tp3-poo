@@ -113,6 +113,42 @@ void Ocurrencia::add_aBinario(int posOcurrencia, int linea, char* file)
     archivo.close();
 }
 
+void Ocurrencia::actualizarBinarioOcurrencias()
+{
+    std::ifstream file("ocurrencias.dat", std::ios::binary | std::ios::in );
+     ocurrenciaStruct ocuStruct;
+    std::vector<ocurrenciaStruct> vectorOcs;
+
+    while(!file.eof()){
+
+        file.read((char*)&ocuStruct, sizeof (ocuStruct));
+        if(!file.eof()){
+             if(strcmp(ocuStruct.nombreArch , nombreArchivo)!=0)
+             {
+                vectorOcs.push_back(ocuStruct);       
+             }
+        }
+       }
+    file.close();
+    std::vector<ocurrenciaStruct> ocusActualizadas = getLinea_yPos(nombreArchivo);
+
+    std::ofstream archivoEntrada;
+    archivoEntrada.open("ocurrencias.dat",std::ios::binary | std::ios::out);
+
+    for(std::vector<ocurrenciaStruct>::iterator it = vectorOcs.begin(); it != vectorOcs.end(); ++it){
+         ocuStruct = *it;
+
+         archivoEntrada.write((char*)&ocuStruct, sizeof (ocuStruct));
+    }
+    for(std::vector<ocurrenciaStruct>::iterator it = ocusActualizadas.begin(); it != ocusActualizadas.end(); ++it){
+        ocuStruct = *it;
+         archivoEntrada.write((char*)&ocuStruct, sizeof (ocuStruct));
+    }
+    archivoEntrada.close();
+
+
+}
+
 void Ocurrencia::setNombreArchivo(char *nombre)
 {
     this->nombreArchivo = nombre;

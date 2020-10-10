@@ -24,6 +24,10 @@ MainWindow::MainWindow(QWidget *parent)
     this->ui->labelUnsavedChanges->hide();
     this->ui->labelChangesSaved->hide();
     this->guardarArchivo = false;
+    this->actualizarArchivo = false;
+    this->ui->labelUpdate->hide();
+    this->ui->buttonUpdate->hide();
+    this->ui->buttonNoUpdate->hide();
     /*QPalette Pal(palette());
     Pal.setColor(QPalette::Background, "#4f4f4f");
     this->setAutoFillBackground(true);
@@ -44,11 +48,25 @@ bool ordenar(Archivo *archivo1, Archivo *archivo2)
 
 void MainWindow::on_botonBuscar_clicked()
 {
+   // this->ui->labelUnsavedChanges->hide();
+   // this->ui->labelSaveChanges->hide();
+   // this->ui->labelChangesSaved->hide();
+
     if(!this->fileExist("indices.dat") && !this->guardarArchivo){
         this->ui->labelSaveChanges->show();
         this->ui->buttonSaveChanges->show();
         this->ui->buttonDontSaveChanges->show();
-    }
+    }else if(this->fileExist("indices.dat") && !this->actualizarArchivo){
+        this->ui->labelUpdate->show();
+        this->ui->buttonUpdate->show();
+        this->ui->buttonNoUpdate->show();
+    }/*else if(this->fileExist("indices.dat") && this->actualizarArchivo){
+        this->ui->labelUpdate->hide();
+        this->ui->buttonUpdate->hide();
+        this->ui->buttonNoUpdate->hide();
+        this->ui->labelUnsavedChanges->hide();
+        this->ui->labelChangesSaved->show();
+    }*/
 
     //Limpia la tableView
     this->ui->tableView->reset();
@@ -91,45 +109,7 @@ void MainWindow::on_botonBuscar_clicked()
 
     if(!fileExist("indices.dat")){
 
-        //Recorro la variables listaArchivos y creo los items de la tabla
-        for(int j=0; j<cantArchivos; j++){
-
-            QString archivoNombre = listaArchivos[j];
-            //Instancio objeto de archivo
-            Archivo* archivo= new Archivo();
-
-            //seteo el nombre del archivo que voy a usar para mostrarlo en los item del modelo
-            int tamanioNombre = archivoNombre.length()+1;
-            char* nombre = new char[tamanioNombre];
-
-            nombre = strcpy(nombre, archivoNombre.toLatin1().data());
-            archivo->setNombre(nombre);
-
-            //tamanio del char* , el +2 representa al \\ y al caracter nulo
-            int tamanioPath = conversionRuta.length() + archivoNombre.length() + 2;
-
-            //Reservar memoria a char* filename y concatenacion del nombre del archivo
-            char* filename ;
-
-            filename = new char[tamanioPath];
-            filename = strcpy(filename, conversionRuta.data() );
-            filename = strcat(filename, "\\");
-            filename = strcat(filename, archivoNombre.toLatin1().data());
-
-            //Seteo el path del archivo
-            archivo->setPath(filename);
-
-            //columna de ocurrencias
-            archivo->ocurrencia->setTamanioOcu(ocu.length());
-            archivo->ocurrencia->setOcurrencia(this->ocurrencia);
-
-            //Le paso true por parametro para que cuente las ocurrencias
-            archivo->setearOcurrencias(filename);
-
-            //Asigno el archivo creado por cada iteracion a un indice del arreglo de archivos
-            this->archivos.push_back(archivo);
-
-        }
+        this->filtrarArchivos(listaArchivos,cantArchivos,conversionRuta, ocu);
 
           if(this->guardarArchivo){
               this->insertarEnBinario();
@@ -138,7 +118,13 @@ void MainWindow::on_botonBuscar_clicked()
 
 
     }else{
-        this->extraerDeArchivoBinario();
+        if(this->actualizarArchivo){
+            this->filtrarArchivos(listaArchivos,cantArchivos,conversionRuta, ocu);
+            this->actualizarBinario();
+
+        }else{
+            this->extraerDeArchivoBinario();
+        }
     }
 
 
@@ -331,6 +317,91 @@ ArchivoStruct MainWindow::returnStruct(Archivo *archivo)
     return fileStr;
 }
 
+//lee todos los archivos menos los que se van a actualizar
+std::vector<ArchivoStruct> MainWindow::leerRegistrosDeBinario()
+{
+    std::ifstream file("indices.dat", std::ios::binary);
+    ArchivoStruct archivoStruct;
+    std::vector<ArchivoStruct> vectorStructArchivos;
+
+    while(!file.eof()){
+        file.read((char*)&archivoStruct, sizeof(archivoStruct));
+        if(!file.eof()){
+            if(strcmp(archivoStruct.ocurrencia, this->ocurrencia) != 0){
+                vectorStructArchivos.push_back(archivoStruct);
+             }
+        }
+    }
+    file.close();
+    return vectorStructArchivos;
+}
+
+void MainWindow::actualizarBinario()
+{
+   std::ofstream binaryFileWrite("indices.dat",std::ios::binary | std::ios::in | std::ios::out);
+   Archivo* archivo;
+    std::vector<ArchivoStruct> archivoStruct = this->leerRegistrosDeBinario();
+   ArchivoStruct structIt;
+
+   for(std::vector<Archivo*>::iterator it = this->archivos.begin(); it != this->archivos.end(); ++it){
+       archivo = *it;
+       ArchivoStruct structArch = this->returnStruct(archivo);
+       binaryFileWrite.write((char*)&structArch, sizeof(structArch));
+   }
+   for(std::vector<ArchivoStruct>::iterator it = archivoStruct.begin(); it != archivoStruct.end(); ++it){
+       structIt = *it;
+        binaryFileWrite.write((char*)&structIt, sizeof(structIt));
+   }
+   binaryFileWrite.close();
+}
+
+void MainWindow::filtrarArchivos(char **listaArchivos, int cantArchivos, QByteArray conversionRuta, QByteArray ocurrencia)
+{
+    //Recorro la variables listaArchivos y creo los items de la tabla
+    for(int j=0; j<cantArchivos; j++){
+
+        QString archivoNombre = listaArchivos[j];
+        //Instancio objeto de archivo
+        Archivo* archivo= new Archivo();
+
+        //seteo el nombre del archivo que voy a usar para mostrarlo en los item del modelo
+        int tamanioNombre = archivoNombre.length()+1;
+        char* nombre = new char[tamanioNombre];
+
+        nombre = strcpy(nombre, archivoNombre.toLatin1().data());
+        archivo->setNombre(nombre);
+
+        //tamanio del char* , el +2 representa al \\ y al caracter nulo
+        int tamanioPath = conversionRuta.length() + archivoNombre.length() + 2;
+
+        //Reservar memoria a char* filename y concatenacion del nombre del archivo
+        char* filename ;
+
+        filename = new char[tamanioPath];
+        filename = strcpy(filename, conversionRuta.data() );
+        filename = strcat(filename, "\\");
+        filename = strcat(filename, archivoNombre.toLatin1().data());
+
+        //Seteo el path del archivo
+        archivo->setPath(filename);
+
+        //columna de ocurrencias
+        archivo->ocurrencia->setTamanioOcu(ocurrencia.length());
+        archivo->ocurrencia->setOcurrencia(this->ocurrencia);
+
+        //Le paso true por parametro para que cuente las ocurrencias
+        archivo->setearOcurrencias(filename);
+
+        if(this->actualizarArchivo){
+            archivo->ocurrencia->setNombreArchivo(archivo->getNombre());
+            archivo->ocurrencia->actualizarBinarioOcurrencias();
+        }
+        //Asigno el archivo creado por cada iteracion a un indice del arreglo de archivos
+        this->archivos.push_back(archivo);
+
+    }
+
+}
 
 void MainWindow::on_pushButton_clicked()
 {
@@ -360,5 +431,26 @@ void MainWindow::on_buttonDontSaveChanges_clicked()
 {
     this->guardarArchivo = false;
     this->ocultarGraficosDeGuardado();
+    this->ui->labelUnsavedChanges->show();
+}
+
+void MainWindow::on_buttonUpdate_clicked()
+{
+    actualizarArchivo = true;
+   /* this->ui->labelUpdate->hide();
+    this->ui->buttonUpdate->hide();
+    this->ui->buttonNoUpdate->hide();*/
+    this->ui->labelChangesSaved->show();
+    this->ui->labelUnsavedChanges->hide();
+    this->ui->botonBuscar->click();
+}
+
+void MainWindow::on_buttonNoUpdate_clicked()
+{
+    actualizarArchivo = false;
+    this->ui->labelUpdate->hide();
+    this->ui->buttonUpdate->hide();
+    this->ui->buttonNoUpdate->hide();
+     this->ui->labelChangesSaved->hide();
     this->ui->labelUnsavedChanges->show();
 }
