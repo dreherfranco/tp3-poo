@@ -49,8 +49,6 @@ private:
     void extraerDeArchivoBinario();
     ArchivoStruct returnStruct(Archivo* archivo);
     void ocultarGraficosDeGuardado();
-    std::vector<ArchivoStruct> leerRegistrosDeBinario();
-    void actualizarBinario();
     void filtrarArchivos(char** listaArchivos, int cantArchivos, QByteArray conversionRuta, QByteArray ocurrencia );
 };
 #endif // MAINWINDOW_H

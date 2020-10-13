@@ -117,10 +117,12 @@ void MainWindow::on_botonBuscar_clicked()
 
 
 
-    }else{
+    }//Si ya existe el archivo binario
+    else
+    {
         if(this->actualizarArchivo){
             this->filtrarArchivos(listaArchivos,cantArchivos,conversionRuta, ocu);
-            this->actualizarBinario();
+            this->insertarEnBinario();
 
         }else{
             this->extraerDeArchivoBinario();
@@ -317,46 +319,12 @@ ArchivoStruct MainWindow::returnStruct(Archivo *archivo)
     return fileStr;
 }
 
-//lee todos los archivos menos los que se van a actualizar
-std::vector<ArchivoStruct> MainWindow::leerRegistrosDeBinario()
-{
-    std::ifstream file("indices.dat", std::ios::binary);
-    ArchivoStruct archivoStruct;
-    std::vector<ArchivoStruct> vectorStructArchivos;
-
-    while(!file.eof()){
-        file.read((char*)&archivoStruct, sizeof(archivoStruct));
-        if(!file.eof()){
-            if(strcmp(archivoStruct.ocurrencia, this->ocurrencia) != 0){
-                vectorStructArchivos.push_back(archivoStruct);
-             }
-        }
-    }
-    file.close();
-    return vectorStructArchivos;
-}
-
-void MainWindow::actualizarBinario()
-{
-   std::ofstream binaryFileWrite("indices.dat",std::ios::binary | std::ios::in | std::ios::out);
-   Archivo* archivo;
-    std::vector<ArchivoStruct> archivoStruct = this->leerRegistrosDeBinario();
-   ArchivoStruct structIt;
-
-   for(std::vector<Archivo*>::iterator it = this->archivos.begin(); it != this->archivos.end(); ++it){
-       archivo = *it;
-       ArchivoStruct structArch = this->returnStruct(archivo);
-       binaryFileWrite.write((char*)&structArch, sizeof(structArch));
-   }
-   for(std::vector<ArchivoStruct>::iterator it = archivoStruct.begin(); it != archivoStruct.end(); ++it){
-       structIt = *it;
-        binaryFileWrite.write((char*)&structIt, sizeof(structIt));
-   }
-   binaryFileWrite.close();
-}
-
 void MainWindow::filtrarArchivos(char **listaArchivos, int cantArchivos, QByteArray conversionRuta, QByteArray ocurrencia)
 {
+    if(actualizarArchivo){
+        std::remove("ocurrencias.dat");
+        std::remove("indices.dat");
+    }
     //Recorro la variables listaArchivos y creo los items de la tabla
     for(int j=0; j<cantArchivos; j++){
 
@@ -392,10 +360,10 @@ void MainWindow::filtrarArchivos(char **listaArchivos, int cantArchivos, QByteAr
         //Le paso true por parametro para que cuente las ocurrencias
         archivo->setearOcurrencias(filename);
 
-        if(this->actualizarArchivo){
+        /*if(this->actualizarArchivo){
             archivo->ocurrencia->setNombreArchivo(archivo->getNombre());
             archivo->ocurrencia->actualizarBinarioOcurrencias();
-        }
+        }*/
         //Asigno el archivo creado por cada iteracion a un indice del arreglo de archivos
         this->archivos.push_back(archivo);
 
