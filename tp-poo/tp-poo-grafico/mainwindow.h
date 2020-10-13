@@ -35,13 +35,14 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    const char* path;
+    char* path;
     Directorio* directorio;
     std::vector<Archivo*> archivos;
     char* ocurrencia;
     int longOcu;
     bool guardarArchivo;
     bool actualizarArchivo;
+    char* nombreArchivoBinario;
 
     QByteArray ignorarPreposiciones(QByteArray ocurrencia);
     bool fileExist(std::string filename);

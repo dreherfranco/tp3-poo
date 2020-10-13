@@ -11,8 +11,7 @@ private:
     char* nombreArchivo;
     int tamanioOcu;
     int totalOcurrencias;
-    //Donde se guardan las ocurrencias con sus posiciones y la cantidad de ocurrencias encontradas
-    //GestorArchivoOcurrencias* gestor;
+    char* rutaArchivoBinario;
 
 public:
     Ocurrencia();
@@ -24,7 +23,7 @@ public:
     void setTamanioOcu(int tamanio);
     void setTotalOcurrencias(int total);
     int getCantOcurrencias();
-
+    void setRutaArchivoBinario(char* path);
     std::vector<ocurrenciaStruct> getLinea_yPos(char* nombreArchivo);
     void setNombreArchivo(char* nombre);
     int getCantNodos();

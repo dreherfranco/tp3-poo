@@ -6,6 +6,7 @@
 Ocurrencia::Ocurrencia()
 {
     this->totalOcurrencias = 0;
+    this->rutaArchivoBinario = nullptr;
 }
 void Ocurrencia::contOcurrencia(char* lineaArchivo, int linea, char* file)
 {
@@ -78,9 +79,18 @@ int Ocurrencia::getCantOcurrencias()
     return totalOcurrencias;
 }
 
+void Ocurrencia::setRutaArchivoBinario(char *path)
+{
+    if(rutaArchivoBinario == nullptr){
+        this->rutaArchivoBinario = new char[strlen(path)+17];
+        strcpy(rutaArchivoBinario,path);
+        strcat(rutaArchivoBinario, "\\ocurrencias.dat");
+    }
+}
+
 std::vector<ocurrenciaStruct> Ocurrencia::getLinea_yPos(char* nombreArchivo)
 {
-    std::ifstream file("ocurrencias.dat", std::ios::binary | std::ios::in );
+    std::ifstream file(rutaArchivoBinario, std::ios::binary | std::ios::in );
      ocurrenciaStruct ocuStruct;
     std::vector<ocurrenciaStruct> vectorOcs;
 
@@ -102,7 +112,7 @@ void Ocurrencia::add_aBinario(int posOcurrencia, int linea, char* file)
 {
     std::ofstream archivo;
     ocurrenciaStruct ocuStruct;
-    archivo.open("ocurrencias.dat",std::ios::binary | std::ios::out | std::ios::app);
+    archivo.open(rutaArchivoBinario,std::ios::binary | std::ios::out | std::ios::app);
 
     ocuStruct.pos = posOcurrencia;
     ocuStruct.linea = linea;
@@ -115,7 +125,7 @@ void Ocurrencia::add_aBinario(int posOcurrencia, int linea, char* file)
 
 void Ocurrencia::actualizarBinarioOcurrencias()
 {
-    std::ifstream file("ocurrencias.dat", std::ios::binary | std::ios::in );
+    std::ifstream file(rutaArchivoBinario, std::ios::binary | std::ios::in );
      ocurrenciaStruct ocuStruct;
     std::vector<ocurrenciaStruct> vectorOcs;
 
@@ -133,7 +143,7 @@ void Ocurrencia::actualizarBinarioOcurrencias()
     std::vector<ocurrenciaStruct> ocusActualizadas = getLinea_yPos(nombreArchivo);
 
     std::ofstream archivoEntrada;
-    archivoEntrada.open("ocurrencias.dat",std::ios::binary | std::ios::out);
+    archivoEntrada.open(rutaArchivoBinario,std::ios::binary | std::ios::out);
 
     for(std::vector<ocurrenciaStruct>::iterator it = vectorOcs.begin(); it != vectorOcs.end(); ++it){
          ocuStruct = *it;

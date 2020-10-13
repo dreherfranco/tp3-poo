@@ -28,11 +28,11 @@ MainWindow::MainWindow(QWidget *parent)
     this->ui->labelUpdate->hide();
     this->ui->buttonUpdate->hide();
     this->ui->buttonNoUpdate->hide();
-    /*QPalette Pal(palette());
+    QPalette Pal(palette());
     Pal.setColor(QPalette::Background, "#4f4f4f");
     this->setAutoFillBackground(true);
     this->setPalette(Pal);
-    this->show();*/
+    this->show();
 }
 
 MainWindow::~MainWindow()
@@ -48,26 +48,6 @@ bool ordenar(Archivo *archivo1, Archivo *archivo2)
 
 void MainWindow::on_botonBuscar_clicked()
 {
-   // this->ui->labelUnsavedChanges->hide();
-   // this->ui->labelSaveChanges->hide();
-   // this->ui->labelChangesSaved->hide();
-
-    if(!this->fileExist("indices.dat") && !this->guardarArchivo){
-        this->ui->labelSaveChanges->show();
-        this->ui->buttonSaveChanges->show();
-        this->ui->buttonDontSaveChanges->show();
-    }else if(this->fileExist("indices.dat") && !this->actualizarArchivo){
-        this->ui->labelUpdate->show();
-        this->ui->buttonUpdate->show();
-        this->ui->buttonNoUpdate->show();
-    }/*else if(this->fileExist("indices.dat") && this->actualizarArchivo){
-        this->ui->labelUpdate->hide();
-        this->ui->buttonUpdate->hide();
-        this->ui->buttonNoUpdate->hide();
-        this->ui->labelUnsavedChanges->hide();
-        this->ui->labelChangesSaved->show();
-    }*/
-
     //Limpia la tableView
     this->ui->tableView->reset();
     this->archivos.clear();
@@ -107,15 +87,17 @@ void MainWindow::on_botonBuscar_clicked()
     int cantArchivos = directorio->getCantArchivos();
     delete this->directorio;
 
-    if(!fileExist("indices.dat")){
+    nombreArchivoBinario = new char[strlen(path)+14];
+    strcpy(this->nombreArchivoBinario,path);
+    strcat(nombreArchivoBinario, "\\archivos.dat");
+
+    if(!fileExist(nombreArchivoBinario)){
 
         this->filtrarArchivos(listaArchivos,cantArchivos,conversionRuta, ocu);
 
           if(this->guardarArchivo){
               this->insertarEnBinario();
           }
-
-
 
     }//Si ya existe el archivo binario
     else
@@ -159,7 +141,16 @@ void MainWindow::on_botonBuscar_clicked()
     this->ui->tableView->resizeColumnToContents(0);
     this->ui->tableView->resizeColumnToContents(1);
     this->ui->tableView->resizeColumnToContents(2);
-    this->ui->tableView->show();
+
+        if(!this->fileExist(nombreArchivoBinario) && !this->guardarArchivo){
+            this->ui->labelSaveChanges->show();
+            this->ui->buttonSaveChanges->show();
+            this->ui->buttonDontSaveChanges->show();
+        }else if(this->fileExist(nombreArchivoBinario) && !this->actualizarArchivo){
+            this->ui->labelUpdate->show();
+            this->ui->buttonUpdate->show();
+            this->ui->buttonNoUpdate->show();
+        }
 
 }
 
@@ -231,6 +222,7 @@ void MainWindow::on_tableView_doubleClicked(const QModelIndex &index)
         int cantNodos = archivo->ocurrencia->getCantOcurrencias();
 
         archivo->ocurrencia->setOcurrencia(this->ocurrencia);
+        archivo->ocurrencia->setRutaArchivoBinario(this->path);
         std::vector<ocurrenciaStruct> vecOcurrencias = archivo->ocurrencia->getLinea_yPos(archivo->getNombre());
 
         if(!vecOcurrencias.empty()){
@@ -243,7 +235,115 @@ void MainWindow::on_tableView_doubleClicked(const QModelIndex &index)
 
         this->ui->ocurrenciasFinded->setText(aInsertar);
         this->ui->ocurrenciasFinded->show();
+
     }
+}
+
+
+void MainWindow::filtrarArchivos(char **listaArchivos, int cantArchivos, QByteArray conversionRuta, QByteArray ocurrencia)
+{
+    if(actualizarArchivo){
+        char* nombreBinarioOcurrencias = new char[strlen(path)+17];
+        strcpy(nombreBinarioOcurrencias, path);
+        strcat(nombreBinarioOcurrencias, "\\ocurrencias.dat");
+        std::remove(nombreBinarioOcurrencias);
+        std::remove(nombreArchivoBinario);
+    }
+    //Recorro la variables listaArchivos y creo los items de la tabla
+    for(int j=0; j<cantArchivos; j++){
+
+        QString archivoNombre = listaArchivos[j];
+        //Instancio objeto de archivo
+        Archivo* archivo= new Archivo();
+
+        //seteo el nombre del archivo que voy a usar para mostrarlo en los item del modelo
+        int tamanioNombre = archivoNombre.length()+1;
+        char* nombre = new char[tamanioNombre];
+
+        nombre = strcpy(nombre, archivoNombre.toLatin1().data());
+        archivo->setNombre(nombre);
+
+        //tamanio del char* , el +2 representa al \\ y al caracter nulo
+        int tamanioPath = conversionRuta.length() + archivoNombre.length() + 2;
+
+        //Reservar memoria a char* filename y concatenacion del nombre del archivo
+        char* filename ;
+
+        filename = new char[tamanioPath];
+        filename = strcpy(filename, conversionRuta.data() );
+        filename = strcat(filename, "\\");
+        filename = strcat(filename, archivoNombre.toLatin1().data());
+
+        //Seteo el path del archivo
+        archivo->setPath(filename);
+        archivo->ocurrencia->setRutaArchivoBinario(this->path);
+        //columna de ocurrencias
+        archivo->ocurrencia->setTamanioOcu(ocurrencia.length());
+        archivo->ocurrencia->setOcurrencia(this->ocurrencia);
+
+        //Le paso true por parametro para que cuente las ocurrencias
+        archivo->setearOcurrencias(filename);
+
+
+        //Asigno el archivo creado por cada iteracion a un indice del arreglo de archivos
+        this->archivos.push_back(archivo);
+
+    }
+
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    this->ui->tableView->show();
+    this->ui->mostrarArchivo->hide();
+    this->ui->ocurrenciasFinded->hide();
+    this->ui->nombreArchivo->hide();
+    this->ui->pushButton->hide();
+}
+
+
+void MainWindow::on_buttonSaveChanges_clicked()
+{
+    this->guardarArchivo = true;
+    this->ocultarGraficosDeGuardado();
+    this->ui->labelChangesSaved->show();
+    this->ui->botonBuscar->click();
+    this->ui->tableView->show();
+}
+
+void MainWindow::ocultarGraficosDeGuardado()
+{
+    this->ui->labelSaveChanges->hide();
+    this->ui->buttonSaveChanges->hide();
+    this->ui->buttonDontSaveChanges->hide();
+}
+
+void MainWindow::on_buttonDontSaveChanges_clicked()
+{
+    this->guardarArchivo = false;
+    this->ocultarGraficosDeGuardado();
+    this->ui->labelUnsavedChanges->show();
+    this->ui->tableView->show();
+}
+
+void MainWindow::on_buttonUpdate_clicked()
+{
+    actualizarArchivo = true;
+    this->ui->labelChangesSaved->show();
+    this->ui->labelUnsavedChanges->hide();
+    this->ui->botonBuscar->click();
+    this->ui->tableView->show();
+}
+
+void MainWindow::on_buttonNoUpdate_clicked()
+{
+    actualizarArchivo = false;
+    this->ui->labelUpdate->hide();
+    this->ui->buttonUpdate->hide();
+    this->ui->buttonNoUpdate->hide();
+     this->ui->labelChangesSaved->hide();
+    this->ui->labelUnsavedChanges->show();
+    this->ui->tableView->show();
 }
 
 QByteArray MainWindow::ignorarPreposiciones(QByteArray ocurrencia){
@@ -275,7 +375,7 @@ bool MainWindow::fileExist(std::string filename)
 
 void MainWindow::insertarEnBinario()
 {
-     std::ofstream binaryFileWrite("indices.dat",std::ios::binary | std::ios::out | std::ios::app);
+     std::ofstream binaryFileWrite(nombreArchivoBinario,std::ios::binary | std::ios::out | std::ios::app);
     Archivo* archivo;
 
     for(std::vector<Archivo*>::iterator it = this->archivos.begin(); it != this->archivos.end(); ++it){
@@ -288,7 +388,7 @@ void MainWindow::insertarEnBinario()
 
 void MainWindow::extraerDeArchivoBinario()
 {
-    std::ifstream file("indices.dat", std::ios::binary);
+    std::ifstream file(nombreArchivoBinario, std::ios::binary);
     ArchivoStruct archivoStruct;
 
     while(!file.eof()){
@@ -317,108 +417,4 @@ ArchivoStruct MainWindow::returnStruct(Archivo *archivo)
     strcpy(fileStr.ocurrencia, this->ocurrencia);
     fileStr.totalOcurrencias = archivo->ocurrencia->getCantOcurrencias();
     return fileStr;
-}
-
-void MainWindow::filtrarArchivos(char **listaArchivos, int cantArchivos, QByteArray conversionRuta, QByteArray ocurrencia)
-{
-    if(actualizarArchivo){
-        std::remove("ocurrencias.dat");
-        std::remove("indices.dat");
-    }
-    //Recorro la variables listaArchivos y creo los items de la tabla
-    for(int j=0; j<cantArchivos; j++){
-
-        QString archivoNombre = listaArchivos[j];
-        //Instancio objeto de archivo
-        Archivo* archivo= new Archivo();
-
-        //seteo el nombre del archivo que voy a usar para mostrarlo en los item del modelo
-        int tamanioNombre = archivoNombre.length()+1;
-        char* nombre = new char[tamanioNombre];
-
-        nombre = strcpy(nombre, archivoNombre.toLatin1().data());
-        archivo->setNombre(nombre);
-
-        //tamanio del char* , el +2 representa al \\ y al caracter nulo
-        int tamanioPath = conversionRuta.length() + archivoNombre.length() + 2;
-
-        //Reservar memoria a char* filename y concatenacion del nombre del archivo
-        char* filename ;
-
-        filename = new char[tamanioPath];
-        filename = strcpy(filename, conversionRuta.data() );
-        filename = strcat(filename, "\\");
-        filename = strcat(filename, archivoNombre.toLatin1().data());
-
-        //Seteo el path del archivo
-        archivo->setPath(filename);
-
-        //columna de ocurrencias
-        archivo->ocurrencia->setTamanioOcu(ocurrencia.length());
-        archivo->ocurrencia->setOcurrencia(this->ocurrencia);
-
-        //Le paso true por parametro para que cuente las ocurrencias
-        archivo->setearOcurrencias(filename);
-
-        /*if(this->actualizarArchivo){
-            archivo->ocurrencia->setNombreArchivo(archivo->getNombre());
-            archivo->ocurrencia->actualizarBinarioOcurrencias();
-        }*/
-        //Asigno el archivo creado por cada iteracion a un indice del arreglo de archivos
-        this->archivos.push_back(archivo);
-
-    }
-
-}
-
-void MainWindow::on_pushButton_clicked()
-{
-    this->ui->tableView->show();
-    this->ui->mostrarArchivo->hide();
-    this->ui->ocurrenciasFinded->hide();
-    this->ui->nombreArchivo->hide();
-    this->ui->pushButton->hide();
-}
-
-
-void MainWindow::on_buttonSaveChanges_clicked()
-{
-    this->guardarArchivo = true;
-    this->ocultarGraficosDeGuardado();
-    this->ui->labelChangesSaved->show();
-}
-
-void MainWindow::ocultarGraficosDeGuardado()
-{
-    this->ui->labelSaveChanges->hide();
-    this->ui->buttonSaveChanges->hide();
-    this->ui->buttonDontSaveChanges->hide();
-}
-
-void MainWindow::on_buttonDontSaveChanges_clicked()
-{
-    this->guardarArchivo = false;
-    this->ocultarGraficosDeGuardado();
-    this->ui->labelUnsavedChanges->show();
-}
-
-void MainWindow::on_buttonUpdate_clicked()
-{
-    actualizarArchivo = true;
-   /* this->ui->labelUpdate->hide();
-    this->ui->buttonUpdate->hide();
-    this->ui->buttonNoUpdate->hide();*/
-    this->ui->labelChangesSaved->show();
-    this->ui->labelUnsavedChanges->hide();
-    this->ui->botonBuscar->click();
-}
-
-void MainWindow::on_buttonNoUpdate_clicked()
-{
-    actualizarArchivo = false;
-    this->ui->labelUpdate->hide();
-    this->ui->buttonUpdate->hide();
-    this->ui->buttonNoUpdate->hide();
-     this->ui->labelChangesSaved->hide();
-    this->ui->labelUnsavedChanges->show();
 }
