@@ -19,14 +19,15 @@ public:
 
     char *getOcurrencia();
     void setOcurrencia(char* ocu);
+    //Necesario para guardar en binario
     void setOcurrencia(ArchivoStruct archivo);
+
     void setTamanioOcu(int tamanio);
     void setTotalOcurrencias(int total);
-    int getCantOcurrencias();
+    int getTotalOcurrencias();
     void setRutaArchivoBinario(char* path);
     std::vector<ocurrenciaStruct> getLinea_yPos(char* nombreArchivo);
     void setNombreArchivo(char* nombre);
-    int getCantNodos();
     void add_aBinario(int posOcurrencia, int linea, char* file);
     void actualizarBinarioOcurrencias();
 };

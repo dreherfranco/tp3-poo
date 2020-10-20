@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include "directorio.h"
 #include "archivo.h"
-
+#include <QStandardItemModel>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -17,7 +17,15 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-
+    QStandardItemModel* inicializarModel(QStandardItemModel* model);
+     QStandardItemModel* setModel(QStandardItemModel* model);
+     void ordenarArchivos();
+     void inicializar_TableView_DobleClick();
+      QString getTextoDeArchivoTxt(char* filename);
+      Archivo* buscarArchivo(char* filename);
+      QString insertarPosicionLineaOcurrencias(Archivo* archivo);
+      void inicializar_BotonBuscar_Clicked();
+      void ocultarGraficosDeGuardado();
 private slots:
     void on_botonBuscar_clicked();
 
@@ -48,8 +56,7 @@ private:
     bool fileExist(std::string filename);
     void insertarEnBinario();
     void extraerDeArchivoBinario();
-    ArchivoStruct returnStruct(Archivo* archivo);
-    void ocultarGraficosDeGuardado();
+    ArchivoStruct returnStruct(Archivo* archivo);    
     void filtrarArchivos(char** listaArchivos, int cantArchivos, QByteArray conversionRuta, QByteArray ocurrencia );
 };
 #endif // MAINWINDOW_H

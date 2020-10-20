@@ -74,7 +74,7 @@ void Ocurrencia::setTotalOcurrencias(int total)
     this->totalOcurrencias += total;
 }
 
-int Ocurrencia::getCantOcurrencias()
+int Ocurrencia::getTotalOcurrencias()
 {
     return totalOcurrencias;
 }
